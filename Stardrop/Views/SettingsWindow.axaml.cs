@@ -96,8 +96,15 @@ namespace Stardrop.Views
                     Tag = server
                 })
                 .ToList();
-            preferredComboBox.SelectedItem = preferredComboBox.Items.Cast<ComboBoxItem>()
-                .First(option => option.Tag is NexusServers server && server == Program.settings.PreferredNexusServer);
+            // Use FirstOrDefault instead of First: if the stored setting holds a value outside
+            // NexusServers (a hand-edited config file), we simply leave the box unselected rather
+            // than throwing, which is what the previous description-based lookup did.
+            var selectedServer = preferredComboBox.Items.Cast<ComboBoxItem>()
+                .FirstOrDefault(option => option.Tag is NexusServers server && server == Program.settings.PreferredNexusServer);
+            if (selectedServer is not null)
+            {
+                preferredComboBox.SelectedItem = selectedServer;
+            }
             preferredComboBox.SelectionChanged += (sender, e) =>
             {
                 if (preferredComboBox.SelectedItem is ComboBoxItem { Tag: NexusServers server })
